@@ -1,0 +1,65 @@
+#ifndef __MOTOR_CONTROL_H
+#define __MOTOR_CONTROL_H
+
+#include "main.h"
+#include "tim.h"
+#include <stdint.h>
+
+#define LEFT_MOTOR_FORWARD() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0,GPIO_PIN_SET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET); \
+}while(0)
+
+#define LEFT_MOTOR_BACKWARD() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0,GPIO_PIN_RESET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_SET); \
+}while(0)
+
+#define LEFT_MOTOR_STOP() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_0,GPIO_PIN_RESET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_1,GPIO_PIN_RESET); \
+}while(0)
+
+#define RIGHT_MOTOR_FORWARD() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_RESET); \
+}while(0)
+
+#define RIGHT_MOTOR_BACKWARD() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_SET); \
+}while(0)
+
+#define RIGHT_MOTOR_STOP() do{ \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET); \
+	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_RESET); \
+}while(0)
+
+#define MAX_PWM 900		//最大占空比
+#define MIN_PWM 150		//最小占空比
+#define DEAD_ZONE 15 	//摇杆死区
+
+// 电机初始化和控制函数
+void Motor_Init(void);
+void Car_Control(int16_t left_pwm, int16_t right_pwm);
+void Car_Stop(void);
+void Car_Forward(int16_t speed);
+void Car_Backward(int16_t speed);
+void Car_TurnLeft(int16_t speed);
+void Car_TurnRight(int16_t speed);
+void Car_Move_Left(int16_t speed);   // 左平移
+void Car_Move_Right(int16_t speed);  // 右平移
+
+// 摇杆映射和滤波函数
+int16_t Map_Joystick_To_PWM(uint8_t joystick_val);
+void Speed_Filter_Update(int16_t* left_filtered, int16_t* right_filtered, int16_t left_target, int16_t right_target);
+
+// 编码器函数
+int32_t Encoder_GetLeftCount(void);
+int32_t Encoder_GetRightCount(void);
+void Encoder_ResetCounts(void);
+
+// PS2手柄控制函数（新版：支持平移和按键旋转）
+void PS2_Control_Car(uint8_t ljoy_lr, uint8_t ljoy_ud, uint8_t btn1);
+
+#endif
