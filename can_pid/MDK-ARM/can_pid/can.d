@@ -31,3 +31,4 @@ can_pid\can.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 can_pid\can.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 can_pid\can.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 can_pid\can.o: ../Core/Inc/usart.h
+can_pid\can.o: C:\Keil5_MDK\ARM\ARMCC\Bin\..\include\stdio.h

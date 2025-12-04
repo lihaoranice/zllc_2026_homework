@@ -33,3 +33,5 @@ can_pid\main.o: ../Core/Inc/can.h
 can_pid\main.o: ../Core/Inc/tim.h
 can_pid\main.o: ../Core/Inc/usart.h
 can_pid\main.o: ../Core/Inc/gpio.h
+can_pid\main.o: C:\Keil5_MDK\ARM\ARMCC\Bin\..\include\stdio.h
+can_pid\main.o: C:\Keil5_MDK\ARM\ARMCC\Bin\..\include\math.h

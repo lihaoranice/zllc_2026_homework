@@ -69,7 +69,6 @@ typedef struct {
 extern uint8_t  motor_angle_inited;         // 标记是否已初始化连续角度
 extern uint16_t motor_last_angle_raw;       // 上一次原始角度（0..8191）用于计算跨越
 extern float    motor_continuous_angle;     // 连续角度跟踪（多圈），单位：度
-extern volatile uint8_t uart_tx_busy;
 extern motor_feedback_t motor_feedback[4];  // 为4个电机维护反馈数据
 /* USER CODE END Private defines */
 

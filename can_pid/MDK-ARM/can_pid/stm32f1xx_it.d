@@ -31,3 +31,4 @@ can_pid\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex
 can_pid\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 can_pid\stm32f1xx_it.o: ../Core/Inc/stm32f1xx_it.h
 can_pid\stm32f1xx_it.o: ../Core/Inc/can.h
+can_pid\stm32f1xx_it.o: ../Core/Inc/usart.h

@@ -17,21 +17,26 @@ Library Manager: ArmAr.exe V5.06 update 5 (build 528)
 Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
 CPU DLL:         SARMCM3.DLL V5.24.1
 Dialog DLL:      DCM.DLL V1.16.0.0
-Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.1.0
+Target DLL:      CMSIS_AGDI.dll V1.28.3.0
 Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
-C:\RM\can_pid\MDK-ARM\can_pid.uvprojx
-Project File Date:  11/28/2025
+C:\RM\zllc_2026_homework\can_pid\MDK-ARM\can_pid.uvprojx
+Project File Date:  12/04/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil5_MDK\ARM\ARMCC\Bin'
 Build target 'can_pid'
-compiling main.c...
 linking...
-Program Size: Code=7926 RO-data=302 RW-data=32 ZI-data=1880  
-FromELF: creating hex file...
-"can_pid\can_pid.axf" - 0 Error(s), 0 Warning(s).
+can_pid\can_pid.axf: Error: L6218E: Undefined symbol HAL_UART_Transmit (referred from main.o).
+can_pid\can_pid.axf: Error: L6218E: Undefined symbol MX_USART1_UART_Init (referred from main.o).
+can_pid\can_pid.axf: Error: L6218E: Undefined symbol huart1 (referred from main.o).
+can_pid\can_pid.axf: Error: L6218E: Undefined symbol HAL_UART_Transmit_IT (referred from can.o).
+can_pid\can_pid.axf: Error: L6218E: Undefined symbol HAL_UART_IRQHandler (referred from stm32f1xx_it.o).
+Not enough information to list image symbols.
+Not enough information to list load addresses in the image map.
+Finished: 2 information, 0 warning and 5 error messages.
+"can_pid\can_pid.axf" - 5 Error(s), 0 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -54,7 +59,8 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:02
+Target not created.
+Build Time Elapsed:  00:00:00
 </pre>
 </body>
 </html>
