@@ -3,17 +3,7 @@
   ******************************************************************************
   * @file    can.c
   * @brief   This file provides code for the configuration
-  *          of the CAN instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
+  * of the CAN instances.
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -23,9 +13,14 @@
 /* USER CODE BEGIN 0 */
 #include "motor_control.h"
 
-void (*can_rx_callback)(uint8_t motor_id, uint16_t rotor_angle, 
-                        int16_t rotor_speed, int16_t torque_current, 
-                        int8_t temperature) = NULL;
+/**
+ * @brief 外部定义的电机状态更新函数
+ * @note  需要在 main.c 或 motor_control.c 中实现此函数，
+ * 用于根据 motor_id 找到对应的电机实例并更新反馈数据。
+ */
+extern void Motor_Update_Status(uint8_t motor_id, uint16_t rotor_angle, 
+                                int16_t rotor_speed, int16_t torque_current, 
+                                int8_t temperature);
 
 /* USER CODE END 0 */
 
@@ -130,21 +125,12 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 
 /* USER CODE BEGIN 1 */
 
-/**
-  * @brief  设置CAN接收回调函数
-  * @param  callback: 回调函数指针
-  * @retval None
-  */
-void CAN_SetRxCallback(void (*callback)(uint8_t, uint16_t, int16_t, int16_t, int8_t))
-{
-    can_rx_callback = callback;
-}
+/* 已删除 CAN_SetRxCallback 函数 */
 
 HAL_StatusTypeDef CAN_InitFilter(uint8_t motor_id)
 {
     CAN_FilterTypeDef sFilterConfig;
     
-    // 配置过滤器，接收0x200 + motor_id的反馈消息
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -245,16 +231,13 @@ void CAN_RxCallback(void)
                 torque_current = (int16_t)((RxData[4] << 8) | RxData[5]);   // 实际转矩电流（有符号）
                 temperature = (int8_t)RxData[6];                            // 电机温度（有符号）
                 
-                // 调用用户回调函数
-                if (can_rx_callback != NULL)
-                {
-                    can_rx_callback(motor_id, rotor_angle, rotor_speed, torque_current, temperature);
-                }
+                // 直接调用外部定义的处理函数
+                Motor_Update_Status(motor_id, rotor_angle, rotor_speed, torque_current, temperature);
             }
         }
     }
 }
-//CAN接收FIFO0消息待处理回调
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     CAN_RxCallback();

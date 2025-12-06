@@ -3,17 +3,7 @@
   ******************************************************************************
   * @file    can.h
   * @brief   This file contains all the function prototypes for
-  *          the can.c file
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2025 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
+  * the can.c file
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -46,7 +36,9 @@ HAL_StatusTypeDef CAN_SendMotorCommand(uint8_t motor_id, int16_t current);
 HAL_StatusTypeDef CAN_InitFilter(uint8_t motor_id);
 void CAN_StartReceive(void);
 void CAN_RxCallback(void);
-void CAN_SetRxCallback(void (*callback)(uint8_t, uint16_t, int16_t, int16_t, int8_t));
+
+/* 已删除 CAN_SetRxCallback 原型 */
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
@@ -54,4 +46,3 @@ void CAN_SetRxCallback(void (*callback)(uint8_t, uint16_t, int16_t, int16_t, int
 #endif
 
 #endif /* __CAN_H__ */
-
