@@ -23,7 +23,6 @@
 /* USER CODE BEGIN 0 */
 #include "motor_control.h"
 
-// 接收回调函数指针
 void (*can_rx_callback)(uint8_t motor_id, uint16_t rotor_angle, 
                         int16_t rotor_speed, int16_t torque_current, 
                         int8_t temperature) = NULL;

@@ -26,64 +26,6 @@ void ControlFrame_Init(ControlFrame_t *f)
   f->reserve = 0U;
 }
 
-uint16_t Control_Map_Channel_FromFloat(float x)
-{
-  const float in_min  = -1.0f;
-  const float in_max  =  1.0f;
-  const float out_min = 364.0f;
-  const float out_max = 1684.0f;
-
-  if (x < in_min) x = in_min;
-  if (x > in_max) x = in_max;
-
-  float k = (out_max - out_min) / (in_max - in_min);
-  float y = out_min + k * (x - in_min);
-
-  if (y < out_min) y = out_min;
-  if (y > out_max) y = out_max;
-
-  return (uint16_t)(y + 0.5f);
-}
-
-uint16_t Control_Map_Channel_FromVoltage(float v)
-{
-  /* 电压范围 0 ~ 3.6V 映射到 364 ~ 1684 */
-  const float in_min  = 0.0f;
-  const float in_max  = 3.6f;
-  const float out_min = 364.0f;
-  const float out_max = 1684.0f;
-
-  if (v < in_min) v = in_min;
-  if (v > in_max) v = in_max;
-
-  float k = (out_max - out_min) / (in_max - in_min);
-  float y = out_min + k * (v - in_min);
-
-  if (y < out_min) y = out_min;
-  if (y > out_max) y = out_max;
-
-  return (uint16_t)(y + 0.5f);
-}
-
-int16_t Control_Map_Mouse_FromFloat(float x)
-{
-  const float in_min  = -1.0f;
-  const float in_max  =  1.0f;
-  const float out_min = -32768.0f;
-  const float out_max =  32767.0f;
-
-  if (x < in_min) x = in_min;
-  if (x > in_max) x = in_max;
-
-  float k = (out_max - out_min) / (in_max - in_min);
-  float y = out_min + k * (x - in_min);
-
-  if (y < out_min) y = out_min;
-  if (y > out_max) y = out_max;
-
-  return (int16_t)(y + (y >= 0.0f ? 0.5f : -0.5f));
-}
-
 void ControlFrame_Pack(uint8_t buf[18], const ControlFrame_t *f)
 {
   if ((buf == NULL) || (f == NULL))

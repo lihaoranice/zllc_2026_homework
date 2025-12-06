@@ -8,11 +8,6 @@ extern "C" {
 #include "main.h"
 #include "pid.h"
 
-#define GEAR_RATIO                19.0f                                      // 减速比：转子和输出轴减速比为19
-#define ROTOR_ANGLE_MAX           8191                                       // 转子角度最大值（对应360°）
-#define ROTOR_ANGLE_TO_RAD        (2.0f * 3.14159265359f / ROTOR_ANGLE_MAX)  // 转子角度转弧度
-#define OUTPUT_SHAFT_TWO_ROTATION (2.0f * 360.0f)                            // 输出轴2圈的角度（度）
-
 typedef struct {
     uint16_t rotor_angle;        // 转子机械角度 (0-8191对应0-360°)
     int16_t rotor_speed;         // 转子转速 (rpm)
@@ -47,8 +42,6 @@ void MotorControl_SetTargetAngle(MotorControl_t *motor, float target_angle_deg);
 int16_t MotorControl_Calculate(MotorControl_t *motor);
 void MotorControl_Reset(MotorControl_t *motor);
 void MotorControl_SetEnable(MotorControl_t *motor, uint32_t enable);
-float MotorControl_GetCurrentAngle(MotorControl_t *motor);
-float MotorControl_CalculateRotorAngleFromOutput(float output_angle_deg);
 void MotorControl_RotateTwoRoundsForward(MotorControl_t *motor);
 void MotorControl_RotateTwoRoundsReverse(MotorControl_t *motor);
 

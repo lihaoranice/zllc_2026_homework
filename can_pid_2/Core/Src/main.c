@@ -51,10 +51,6 @@
 MotorControl_t motor1;
 
 uint32_t last_control_time = 0;
-#define CONTROL_PERIOD_MS  1
-
-static uint32_t uart_send_counter = 0;  // 串口发送计数器（用于降低发送频率）
-#define UART_SEND_INTERVAL  1  // 每10次CAN接收发送一次串口数据
 
 // 串口发送数据缓冲区
 typedef struct {
@@ -149,7 +145,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     uint32_t current_time = HAL_GetTick();
-    if (current_time - last_control_time >= CONTROL_PERIOD_MS)
+    if (current_time - last_control_time >= 10)
     {
 
       int16_t current_command = MotorControl_Calculate(&motor1);
@@ -215,43 +211,26 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-void MotorFeedbackCallback(uint8_t motor_id, uint16_t rotor_angle, 
-                           int16_t rotor_speed, int16_t torque_current, 
-                           int8_t temperature)
+void MotorFeedbackCallback(uint8_t motor_id, uint16_t rotor_angle, int16_t rotor_speed, int16_t torque_current, int8_t temperature)
 {
-
   if (motor_id == motor1.motor_id)
   {
-    MotorControl_UpdateFeedback(&motor1, rotor_angle, rotor_speed, 
-                                torque_current, temperature);
+    MotorControl_UpdateFeedback(&motor1, rotor_angle, rotor_speed, torque_current, temperature);
   }
   
-  uart_send_counter++;
-  if (uart_send_counter >= UART_SEND_INTERVAL)
-  {
-    uart_send_counter = 0;
-    
-    uart_send_data.motor_id = motor_id;
-    uart_send_data.rotor_angle = rotor_angle;
-    uart_send_data.rotor_speed = rotor_speed;
-    uart_send_data.torque_current = torque_current;
-    uart_send_data.temperature = temperature;
-    uart_send_data.data_ready = 1;
-  }
+  uart_send_data.motor_id = motor_id;
+  uart_send_data.rotor_angle = rotor_angle;
+  uart_send_data.rotor_speed = rotor_speed;
+  uart_send_data.torque_current = torque_current;
+  uart_send_data.temperature = temperature;
+  uart_send_data.data_ready = 1;
+ 
 }
 
-void UART_SendMotorFeedback(uint8_t motor_id, uint16_t rotor_angle, 
-                            int16_t rotor_speed, int16_t torque_current, 
-                            int8_t temperature)
+void UART_SendMotorFeedback(uint8_t motor_id, uint16_t rotor_angle, int16_t rotor_speed, int16_t torque_current, int8_t temperature)
 {
   char uart_buffer[200];
-  float rotor_angle_deg;
-  float output_angle_deg; // 输出轴角度（度）
   int len;
-  
-  rotor_angle_deg = (float)rotor_angle * 360.0f / 8191.0f;
-  
-  output_angle_deg = rotor_angle_deg / 19.0f;
   
   float total_output_angle = 0.0f;
   if (motor_id == motor1.motor_id)
@@ -259,17 +238,17 @@ void UART_SendMotorFeedback(uint8_t motor_id, uint16_t rotor_angle,
     total_output_angle = motor1.total_output_angle;
   }
 
-  // VOFA+格式：使用逗号分隔数据，以0x0D,0x0A结尾，确保数据有效传输
-  // 确保在motor_id匹配时才发送有效数据
-  if (motor_id == motor1.motor_id) {
+  if (motor_id == motor1.motor_id)
+  {
     len = snprintf(uart_buffer, sizeof(uart_buffer), 
                  "%.2f,%.2f,%.2f\r\n", 
                  total_output_angle,          // 通道1：总输出角度
                  motor1.target_output_angle,  // 通道2：目标角度
                  motor1.current_output_angle   // 通道3：当前角度
                  );
-  } else {
-    // 如果motor_id不匹配，发送默认值
+  }
+  else
+  {
     len = snprintf(uart_buffer, sizeof(uart_buffer), "0.00,0.00,0.00\r\n");
   }
   
