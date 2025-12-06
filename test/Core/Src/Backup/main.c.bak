@@ -46,6 +46,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static ControlFrame_t g_tx_frame;
+static ControlFrame_t g_rx_frame;
+static uint8_t g_tx_buf[18];
+static uint8_t g_rx_buf[18];
 
 /* USER CODE END PV */
 
@@ -57,9 +61,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-static ControlFrame_t g_frame;
-static uint8_t g_txBuf[18];
 
 /* USER CODE END 0 */
 
@@ -93,9 +94,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  ControlFrame_Init(&g_frame);
+  ControlFrame_Init(&g_tx_frame);
+  ControlFrame_Init(&g_rx_frame);
 
   /* USER CODE END 2 */
 
@@ -106,23 +108,43 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    /* 示例：假设 ADC 为 12bit，范围 0~4095，对应电压 0~3.6V */
-    uint16_t adc0 = 2048; /* 这里用测试值，实际中请替换为你的 ADC 采样结果 */
-    float v0 = (3.6f * (float)adc0) / 4095.0f;
+    HAL_StatusTypeDef rx_status = ControlFrame_ReceiveAndDecode(&huart3, &g_rx_frame, g_rx_buf, 100);
+    
+    if (rx_status == HAL_OK)
+    {
+      
+      //直接回环发送
+      ControlFrame_Send(&huart3, &g_rx_frame, g_tx_buf);
+      
+      // 根据接收到的数据修改发送的数据
+      // g_tx_frame.ch0 = g_rx_frame.ch0;
+      // g_tx_frame.ch1 = g_rx_frame.ch1;
+      // g_tx_frame.ch2 = g_rx_frame.ch2;
+      // g_tx_frame.ch3 = g_rx_frame.ch3;
+      // g_tx_frame.s1 = g_rx_frame.s1;
+      // g_tx_frame.s2 = g_rx_frame.s2;
+      // ControlFrame_Send(&huart3, &g_tx_frame, g_tx_buf);
+    }
+    else if (rx_status == HAL_TIMEOUT)
+    {
+      /* 示例：假设 ADC 为 12bit，范围 0~4095，对应电压 0~3.6V */
+      uint16_t adc0 = 2048; /* 这里用测试值，实际中请替换为你的 ADC 采样结果 */
+      float v0 = (3.6f * (float)adc0) / 4095.0f;
 
-    g_frame.ch0 = Control_Map_Channel_FromVoltage(v0);
-    g_frame.ch1 = g_frame.ch0;
-    g_frame.ch2 = g_frame.ch0;
-    g_frame.ch3 = g_frame.ch0;
+      g_tx_frame.ch0 = Control_Map_Channel_FromVoltage(v0);
+      g_tx_frame.ch1 = g_tx_frame.ch0;
+      g_tx_frame.ch2 = g_tx_frame.ch0;
+      g_tx_frame.ch3 = g_tx_frame.ch0;
 
-    /* 鼠标X/Y/Z 使用 -1.0~1.0 映射到 -32768~32767 */
-    g_frame.mouse_x = Control_Map_Mouse_FromFloat(0.0f);
-    g_frame.mouse_y = Control_Map_Mouse_FromFloat(0.0f);
-    g_frame.mouse_z = Control_Map_Mouse_FromFloat(0.0f);
+      /* 鼠标X/Y/Z 使用 -1.0~1.0 映射到 -32768~32767 */
+      g_tx_frame.mouse_x = Control_Map_Mouse_FromFloat(0.0f);
+      g_tx_frame.mouse_y = Control_Map_Mouse_FromFloat(0.0f);
+      g_tx_frame.mouse_z = Control_Map_Mouse_FromFloat(0.0f);
 
-    /* 发送一帧 */
-    ControlFrame_Send(&huart1, &g_frame, g_txBuf);
-    HAL_Delay(10);
+      ControlFrame_Send(&huart3, &g_tx_frame, g_tx_buf);
+    }
+    
+    HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }

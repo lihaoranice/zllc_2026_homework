@@ -1,45 +1,5 @@
 #include "control_frame.h"
 
-static void set_bits(uint8_t *buf, uint16_t bit_offset, uint8_t bit_len, uint32_t value)
-{
-  for (uint8_t i = 0; i < bit_len; i++)
-  {
-    uint16_t bit_pos  = bit_offset + i;
-    uint16_t byte_idx = bit_pos / 8U;
-    uint8_t  bit_idx  = (uint8_t)(bit_pos % 8U);
-
-    if (value & (1UL << i))
-    {
-      buf[byte_idx] |= (uint8_t)(1U << bit_idx);
-    }
-    else
-    {
-      buf[byte_idx] &= (uint8_t)~(1U << bit_idx);
-    }
-  }
-}
-
-static uint32_t get_bits(const uint8_t *buf, uint16_t bit_offset, uint8_t bit_len)
-{
-  uint32_t value = 0U;
-
-  for (uint8_t i = 0; i < bit_len; i++)
-  {
-    uint16_t bit_pos  = bit_offset + i;
-    uint16_t byte_idx = bit_pos / 8U;
-    uint8_t  bit_idx  = (uint8_t)(bit_pos % 8U);
-
-    uint8_t bit = (uint8_t)((buf[byte_idx] >> bit_idx) & 0x01U);
-
-    if (bit != 0U)
-    {
-      value |= (1UL << i);
-    }
-  }
-
-  return value;
-}
-
 void ControlFrame_Init(ControlFrame_t *f)
 {
   if (f == NULL)
@@ -78,30 +38,6 @@ uint16_t Control_Map_Channel_FromFloat(float x)
 
   float k = (out_max - out_min) / (in_max - in_min);
   float y = out_min + k * (x - in_min);
-
-  if (y < out_min) y = out_min;
-  if (y > out_max) y = out_max;
-
-  return (uint16_t)(y + 0.5f);
-}
-
-uint16_t Control_Map_Channel_FromADC(uint16_t adc, uint16_t adc_min, uint16_t adc_max)
-{
-  if (adc_max <= adc_min)
-  {
-    return 1024U;
-  }
-
-  const float out_min = 364.0f;
-  const float out_max = 1684.0f;
-
-  if (adc < adc_min) adc = adc_min;
-  if (adc > adc_max) adc = adc_max;
-
-  float in_span  = (float)(adc_max - adc_min);
-  float out_span = out_max - out_min;
-
-  float y = out_min + out_span * (float)(adc - adc_min) / in_span;
 
   if (y < out_min) y = out_min;
   if (y > out_max) y = out_max;
@@ -192,18 +128,6 @@ void ControlFrame_Pack(uint8_t buf[18], const ControlFrame_t *f)
   buf[17] = (uint8_t)((f->reserve >> 8) & 0xFFU);
 }
 
-void ControlFrame_Send(UART_HandleTypeDef *huart, ControlFrame_t *f, uint8_t buf[18])
-{
-  if ((huart == NULL) || (f == NULL) || (buf == NULL))
-  {
-    return;
-  }
-
-  ControlFrame_Pack(buf, f);
-
-  (void)HAL_UART_Transmit(huart, buf, 18U, 100U);
-}
-
 void ControlFrame_Decode(const uint8_t buf[18], ControlFrame_t *f)
 {
   if ((buf == NULL) || (f == NULL))
@@ -213,43 +137,29 @@ void ControlFrame_Decode(const uint8_t buf[18], ControlFrame_t *f)
 
   const uint8_t *pData = buf;
 
-  /* 按协议进行解析，写回到已有的结构体成员 */
-  f->ch0 = (uint16_t)(((int16_t)pData[0]       |
-                       ((int16_t)pData[1] << 8)) & 0x07FF);
+  f->ch0 = (uint16_t)(((int16_t)pData[0] | ((int16_t)pData[1] << 8)) & 0x07FF);
 
-  f->ch1 = (uint16_t)((((int16_t)pData[1] >> 3) |
-                       ((int16_t)pData[2] << 5)) & 0x07FF);
+  f->ch1 = (uint16_t)((((int16_t)pData[1] >> 3) | ((int16_t)pData[2] << 5)) & 0x07FF);
 
-  f->ch2 = (uint16_t)((((int16_t)pData[2] >> 6) |
-                       ((int16_t)pData[3] << 2) |
-                       ((int16_t)pData[4] << 10)) & 0x07FF);
+  f->ch2 = (uint16_t)((((int16_t)pData[2] >> 6) | ((int16_t)pData[3] << 2) | ((int16_t)pData[4] << 10)) & 0x07FF);
 
-  f->ch3 = (uint16_t)((((int16_t)pData[4] >> 1) |
-                       ((int16_t)pData[5] << 7)) & 0x07FF);
+  f->ch3 = (uint16_t)((((int16_t)pData[4] >> 1) | ((int16_t)pData[5] << 7)) & 0x07FF);
 
-  /* 开关位：与示例协议一致 */
-  uint8_t sw = (uint8_t)(pData[5] >> 4);
-  f->s1 = (uint8_t)((sw & 0x0CU) >> 2); /* s1: bit6~7 */
-  f->s2 = (uint8_t)(sw & 0x03U);       /* s2: bit4~5 */
+  f->s1 = (uint8_t)((pData[5] >> 4 & 0x000C) >> 2);
+  f->s2 = (uint8_t)(pData[5] >> 4 & 0x0003);
 
-  /* 鼠标坐标：小端 16bit */
   f->mouse_x = (int16_t)((int16_t)pData[6]  | ((int16_t)pData[7]  << 8));
   f->mouse_y = (int16_t)((int16_t)pData[8]  | ((int16_t)pData[9]  << 8));
   f->mouse_z = (int16_t)((int16_t)pData[10] | ((int16_t)pData[11] << 8));
 
-  /* 鼠标按键：1 字节 */
   f->mouse_left  = pData[12];
   f->mouse_right = pData[13];
 
-  /* 键盘键值：16bit，小端 */
   f->key     = (uint16_t)((uint16_t)pData[14] | ((uint16_t)pData[15] << 8));
   f->reserve = (uint16_t)((uint16_t)pData[16] | ((uint16_t)pData[17] << 8));
 }
 
-HAL_StatusTypeDef ControlFrame_ReceiveAndDecode(UART_HandleTypeDef *huart,
-                                                ControlFrame_t *f,
-                                                uint8_t buf[18],
-                                                uint32_t timeout)
+HAL_StatusTypeDef ControlFrame_ReceiveAndDecode(UART_HandleTypeDef *huart, ControlFrame_t *f, uint8_t buf[18], uint32_t timeout)
 {
   if ((huart == NULL) || (f == NULL) || (buf == NULL))
   {

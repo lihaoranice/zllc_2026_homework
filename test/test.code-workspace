@@ -44,5 +44,29 @@
             "dan-c-underwood.arm",
             "marus25.cortex-debug"
         ]
+    },
+    "launch": {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "cortex-debug",
+                "name": "Debug: OpenOCD(attach)",
+                "request": "attach",
+                "toolchainPrefix": "arm-none-eabi",
+                "armToolchainPath": "C:\\Users\\Haoran laptop\\.eide\\tools\\gcc_arm\\bin",
+                "cwd": "c:\\RM\\test",
+                "executable": ".\\build\\Debug\\test.elf",
+                "liveWatch": {
+                    "enabled": true,
+                    "samplesPerSecond": 4
+                },
+                "servertype": "openocd",
+                "configFiles": [
+                    "interface/stlink.cfg",
+                    "target/stm32f1x.cfg"
+                ],
+                "serverpath": "C:\\Users\\Haoran laptop\\.eide\\tools\\openocd_7a1adfbec_mingw32\\bin\\openocd.exe"
+            }
+        ]
     }
 }
